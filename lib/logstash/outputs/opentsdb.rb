@@ -57,13 +57,14 @@ class LogStash::Outputs::Opentsdb < LogStash::Outputs::Base
     # Catch exceptions like ECONNRESET and friends, reconnect on failure.
     begin
       name = metrics[0]
-      value = metrics[1]
-      tags = metrics[2..-1]
+      timestamp = metrics[1]
+      value = metrics[2]
+      tags = metrics[3..-1]
 
       # The first part of the message
       message = ['put',
                  event.sprintf(name),
-                 event.sprintf("%{+%s}"),
+                 event.sprintf(timestamp),
                  event.sprintf(value),
       ].join(" ")
 
