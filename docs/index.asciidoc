@@ -63,12 +63,14 @@ for metric names and also for values. This is an array field with key
 of the metric name, value of the metric value, and multiple tag,values . Example:
 [source,ruby]
     [
-      "%{host}/uptime",
-      %{uptime_1m} " ,
-      "hostname" ,
-      "%{host}
-      "anotherhostname" ,
-      "%{host}
+      "%{metric}",
+      "%{timestamp}",
+      "%{value}",
+      "tag1",
+      "%{tag1_value}",
+      ...
+      "tagn",
+      "%{tagn_value}"
     ]
 
 The value will be coerced to a floating point value. Values which cannot be
