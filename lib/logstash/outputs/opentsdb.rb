@@ -30,7 +30,7 @@ class LogStash::Outputs::Opentsdb < LogStash::Outputs::Base
   #
   # The value will be coerced to a floating point value. Values which cannot be
   # coerced will zero (0)
-  config :metrics, :validate => :array, :required => true
+  config :metrics, :validate => :string, :required => true
 
   def register
     connect
@@ -56,10 +56,11 @@ class LogStash::Outputs::Opentsdb < LogStash::Outputs::Base
 
     # Catch exceptions like ECONNRESET and friends, reconnect on failure.
     begin
-      name = metrics[0]
-      timestamp = metrics[1]
-      value = metrics[2]
-      tags = metrics[3..-1]
+      _metrics = event.sprintf(metrics).split(',')
+      name = _metrics[0]
+      timestamp = _metrics[1]
+      value = _metrics[2]
+      tags = _metrics[3..-1]
 
       # The first part of the message
       message = ['put',
