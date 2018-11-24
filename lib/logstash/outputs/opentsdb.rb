@@ -14,23 +14,18 @@ class LogStash::Outputs::Opentsdb < LogStash::Outputs::Base
 
   # The port to connect on your graphite server.
   config :port, :validate => :number, :default => 4242
+  
+  # The metric name
+  config :metric, :validate => :string, :required => true  
 
-  # The metric(s) to use. This supports dynamic strings like %{source_host}
-  # for metric names and also for values. This is an array field with key
-  # of the metric name, value of the metric value, and multiple tag,values . Example:
-  # [source,ruby]
-  #     [
-  #       "%{host}/uptime",
-  #       %{uptime_1m} " ,
-  #       "hostname" ,
-  #       "%{host}
-  #       "anotherhostname" ,
-  #       "%{host}
-  #     ]
-  #
-  # The value will be coerced to a floating point value. Values which cannot be
-  # coerced will zero (0)
-  config :metrics, :validate => :string, :required => true
+  # The timestamp long number
+  config :timestamp, :validate => :number, :required => true
+  
+  # The value
+  config :value, :validate => :number, :required => true
+  
+  # The tags, k1=v1,k2=v2
+  config :tags, :validate => :string, :default => "k=v"
 
   def register
     connect
@@ -50,38 +45,17 @@ class LogStash::Outputs::Opentsdb < LogStash::Outputs::Base
 
   public
   def receive(event)
-    
-
     # Opentsdb message format: put metric timestamp value tagname=tagvalue tag2=value2\n
-
     # Catch exceptions like ECONNRESET and friends, reconnect on failure.
     begin
-      _metrics = event.sprintf(metrics).split(',')
-      name = _metrics[0]
-      timestamp = _metrics[1]
-      value = _metrics[2]
-      tags = _metrics[3..-1]
-
       # The first part of the message
       message = ['put',
-                 event.sprintf(name),
+                 event.sprintf(metric),
                  event.sprintf(timestamp),
                  event.sprintf(value),
-      ].join(" ")
+                 event.sprintf(tags).split(',').join(' '),
+      ].join(' ')
 
-      # If we have have tags we need to add it to the message
-      event_tags = []
-      unless tags.nil?
-        Hash[*tags.flatten].each do |tag_name,tag_value|
-          # Interprete variables if neccesary
-          real_tag_name = event.sprintf(tag_name)
-          real_tag_value =  event.sprintf(tag_value)
-          event_tags << [real_tag_name , real_tag_value ].join('=')
-        end
-        message+=' '+event_tags.join(' ')
-      end
-
-      # TODO(sissel): Test error cases. Catch exceptions. Find fortune and glory.
       begin
         @socket.puts(message)
       rescue Errno::EPIPE, Errno::ECONNRESET => e
@@ -91,9 +65,6 @@ class LogStash::Outputs::Opentsdb < LogStash::Outputs::Base
         connect
       end
 
-      # TODO(sissel): resend on failure
-      # TODO(sissel): Make 'resend on failure' tunable; sometimes it's OK to
-      # drop metrics.
-    end # @metrics.each
+    end
   end # def receive
 end # class LogStash::Outputs::Opentsdb
