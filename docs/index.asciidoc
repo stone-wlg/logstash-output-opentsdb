@@ -74,7 +74,7 @@ The metric name.
 
   * Value type is <<string,string>>
 
-The unix timestamp long number.
+The unix timestamp long number, ex: 1543137360294.
 
 [id="plugins-{type}s-{plugin}-value"]
 ===== `value` 
@@ -84,7 +84,7 @@ The unix timestamp long number.
 The value.
 
 [id="plugins-{type}s-{plugin}-tags"]
-t
+===== `tags` 
   * Value type is <<string,string>>
 
 The tags, ex: k1=v1,k2=v2
