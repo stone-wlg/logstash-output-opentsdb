@@ -25,7 +25,7 @@ class LogStash::Outputs::Opentsdb < LogStash::Outputs::Base
   config :value, :validate => :string, :required => true
   
   # The tags, k1=v1,k2=v2
-  config :tags, :validate => :string, :default => "k=v"
+  config :tags, :validate => :string, :required => true
 
   def register
     connect
@@ -53,8 +53,14 @@ class LogStash::Outputs::Opentsdb < LogStash::Outputs::Base
                  event.sprintf(name),
                  event.sprintf(timestamp),
                  event.sprintf(value),
-                 event.sprintf(tags).split(',').join(' '),
       ].join(' ')
+
+      event_tags = event.sprintf(tags)
+      if event_tags.nil? or event_tags.strip.empty? or event_tags.index('=').nil?
+        message += ' k=v'
+      else
+        message += ' ' + event_tags.split(',').join(' ')
+      end
       #@logger.info(message)
       begin
         @socket.puts(message)
