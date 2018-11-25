@@ -16,13 +16,13 @@ class LogStash::Outputs::Opentsdb < LogStash::Outputs::Base
   config :port, :validate => :number, :default => 4242
   
   # The metric name
-  config :metric, :validate => :string, :required => true  
+  config :name, :validate => :string, :required => true  
 
   # The timestamp long number
-  config :timestamp, :validate => :number, :required => true
+  config :timestamp, :validate => :string, :required => true
   
   # The value
-  config :value, :validate => :number, :required => true
+  config :value, :validate => :string, :required => true
   
   # The tags, k1=v1,k2=v2
   config :tags, :validate => :string, :default => "k=v"
@@ -50,20 +50,20 @@ class LogStash::Outputs::Opentsdb < LogStash::Outputs::Base
     begin
       # The first part of the message
       message = ['put',
-                 event.sprintf(metric),
+                 event.sprintf(name),
                  event.sprintf(timestamp),
                  event.sprintf(value),
                  event.sprintf(tags).split(',').join(' '),
       ].join(' ')
-    end
-    
-    begin
-      @socket.puts(message)
-    rescue Errno::EPIPE, Errno::ECONNRESET => e
-      @logger.warn("Connection to opentsdb server died",
-                   :exception => e, :host => @host, :port => @port)
-      sleep(2)
-      connect
+      #@logger.info(message)
+      begin
+        @socket.puts(message)
+      rescue Errno::EPIPE, Errno::ECONNRESET => e
+        @logger.warn("Connection to opentsdb server died",
+                    :exception => e, :host => @host, :port => @port)
+        sleep(2)
+        connect
+      end
     end
   end # def receive
 end # class LogStash::Outputs::Opentsdb
