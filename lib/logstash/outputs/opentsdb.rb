@@ -50,18 +50,18 @@ class LogStash::Outputs::Opentsdb < LogStash::Outputs::Base
     begin
       # The first part of the message
       message = ['put',
-                 event.sprintf(name),
-                 event.sprintf(timestamp),
-                 event.sprintf(value),
+                 event.sprintf(@name),
+                 event.sprintf(@timestamp),
+                 event.sprintf(@value),
       ].join(' ')
 
-      event_tags = event.sprintf(tags)
+      event_tags = event.sprintf(@tags)
       if event_tags.nil? or event_tags.strip.empty? or event_tags.index('=').nil?
         message += ' k=v'
       else
         message += ' ' + event_tags.split(',').join(' ')
       end
-      #@logger.info(message)
+      @logger.info(message)
       begin
         @socket.puts(message)
       rescue Errno::EPIPE, Errno::ECONNRESET => e
