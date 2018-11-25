@@ -55,16 +55,15 @@ class LogStash::Outputs::Opentsdb < LogStash::Outputs::Base
                  event.sprintf(value),
                  event.sprintf(tags).split(',').join(' '),
       ].join(' ')
-
-      begin
-        @socket.puts(message)
-      rescue Errno::EPIPE, Errno::ECONNRESET => e
-        @logger.warn("Connection to opentsdb server died",
-                     :exception => e, :host => @host, :port => @port)
-        sleep(2)
-        connect
-      end
-
+    end
+    
+    begin
+      @socket.puts(message)
+    rescue Errno::EPIPE, Errno::ECONNRESET => e
+      @logger.warn("Connection to opentsdb server died",
+                   :exception => e, :host => @host, :port => @port)
+      sleep(2)
+      connect
     end
   end # def receive
 end # class LogStash::Outputs::Opentsdb
